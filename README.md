@@ -36,7 +36,7 @@ pip install -r requirements.txt
 sudo airmon-ng start wlp6s0
 
 # Run the sniffer
-sudo python3 etherhound.py
+sudo python3 probe_logger.py
 
 # Generate map
 python3 map_generator.py

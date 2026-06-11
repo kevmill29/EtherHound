@@ -6,6 +6,8 @@ import threading
 import subprocess
 import time
 import os
+import socket
+import pynmea2
 
 
 #clean up function
@@ -21,6 +23,36 @@ def archive_old_database():
         # Rename (move) the file
         os.rename(db_filename, archive_name)
         print(f"[*] Saved previous session data to: {archive_name}")
+
+#get latitude and longitude from phone via tethering
+def get_gps_from_phone():
+    #replace with you phone's IP address and app port
+    #I  will be using an app called GPS2IP to get info
+    PHONE_IP = "192.168.1.100"  # Replace with your phone's IP
+    PHONE_PORT = 8080  # Replace with your app's port
+
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(2.0) # Don't freeze the script if phone disconnects
+        sock.connect((PHONE_IP, PHONE_PORT))
+        data = sock.recv(1024).decode('ascii', errors='ignore')
+        sock.close()
+
+        #parse the raw data to find the latitude and longitude
+        for line in data.split('\n'):
+            if line.startswith('$GPGGA') or line.startswith('$GPRMC'):
+                msg = pynmaea2.parse(line)
+                if msg.latitude != 0.0
+                    return msg.latitude, msg.longitude
+
+    except Exception as e:
+        #Fail silently so sniffer doesn't crash
+        pass
+    
+    return None, None #Return none if no valid GPS data is found
+
+    
+
 
 #-- Channels to hop accross 2.4ghz/5ghz --
 CHANNELS_2GHZ = list(range(1,14))
@@ -143,6 +175,9 @@ def handle_packet(pkt):
 #INTERFACE = "wlan0"
 #Set your current location coordinates here
 #Use google maps to copy coordinates
+#Note- Since a heatmap visualizes density, hardcoded coordinates 
+#will just look like one giant, intensely glowing red dot until you hook up your actual GPS module
+
 #LAT=0.0
 #LON=0.0
 INTERFACE = "wlp6s0mon"

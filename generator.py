@@ -44,14 +44,14 @@ def generate_map():
             popup= folium.Popup(
             f"MAC: {mac}<br>"
             f"Vendor: {vendor}<br>"
-            f"Randomized: {randomized}<br>"
+            f"Randomized: {rand_text}<br>"
             f"SSID: {ssid}",
             max_width=250
             )
         ).add_to(cluster)
 
         #Add heat map layer
-     HeatMap(heat_data).add_to(m)
+    HeatMap(heat_data).add_to(m)
 
     m.save("probe_map.html")        
     print("[*]Map saved to probe_map.html - open it in your browser!")

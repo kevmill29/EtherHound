@@ -1,0 +1,17 @@
+#Sensitive files
+probe_log.db
+probe_map.html
+
+
+#Virtual Environment
+ven
+
+
+#Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+#OS Files
+.DS_Store
+Thumbs.db

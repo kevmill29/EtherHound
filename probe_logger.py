@@ -23,7 +23,8 @@ def channel_hopper(interface, hop_interval=0.5):
                     stderr=subprocess.DEVNULL
                 )
                 time.sleep(hop_interval)
-                except Exception as e:
+
+            except Exception as e:
                     print(f"[!] Channel  hop error: {e}")
 
 #1st step  -- Database Setup --
@@ -33,7 +34,7 @@ def init_db():
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS probe_requests(
         id INTEGER PRIMARY KEY AUTOINCREMENT
-        timestamp TEXT,
+        capture_time TEXT,
         vendor TEXT
         mac_address TEXT,
         ssid TEXT
@@ -53,7 +54,7 @@ def log_to_db(timestamp, mac, ssid, vendor, randomized, lat, lon):
     conn = sqlite3.connect("probe_log.db")
     cursor = conn.cursor()
     cursor.execute('''
-        INSERT INTO probe_requests (timestamp, mac_address, ssid, vendor, randomized, latitude, longitude)
+        INSERT INTO probe_requests (capture_time, mac_address, ssid, vendor, randomized, latitude, longitude)
         VALUES(?,?,?,?,?,?,?)
         ''', (timestamp, mac, ssid, vendor, randomized, lat, lon))
     conn.commit()
@@ -86,8 +87,8 @@ def get_current_channel(interface):
         for line in output.split('\n'):
             if 'channel' in line:
                 return(int(line.strip('.').split()[1]))
-            except Exception:
-                return None
+    except Exception:
+        return None
 
 
 #6th Step -- Packet Handler--
@@ -115,23 +116,23 @@ def handle_packet(pkt):
 #MAIN
 
 #replace this with your interface name(run ip link to see available interfaces)
-INTERFACE = " wlp6s0
+INTERFACE = "wlan0"
 
 #Set your current location coordinates here
 #Use google maps to copy coordinates
-LAT = -74.02064671427073
-LON = 41.4894760813576 
+LAT = 0.00
+LON = 0.00
 
 
 init_db()
 
-print([*] Updating MAC vendor database...")
+print("[*] Updating MAC vendor database...")
 MacLookup().update_vendors()
 
 #Start channel hopping in a seperate thread
 hopper_thread = threading.thread(
     target=channel_hopper,
-    args=(INTERFACE,)
+    args=(INTERFACE,),
     dameon= True #will kill automatically when the main program exits
 )
 hopper_thread.start()

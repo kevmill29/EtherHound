@@ -95,16 +95,20 @@ def get_current_channel(interface):
 def handle_packet(pkt):
     if pkt.haslayer(Dot11ProbeReq):
         mac = pkt.addr2
+        #error handling for no mac address
+        if not mac:
+            return
+
         ssid=pkt.info.decode(errors='ignore')  if pkt.info else "<wildcard>"
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        capture_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         vendor = get_vendor(mac)
         randomized= is_randomized(mac)
         randomized_str="Yes" if randomized else "No"
         channel = get_current_channel(INTERFACE)
-        log_to_db(timestamp, mac, ssid, vendor, randomized, channel, LAT, LON) #Hardcoded coordinates for now, will find out later how to prompt user for them
+        log_to_db(capture_time, mac, ssid, vendor, randomized, channel, LAT, LON) #Hardcoded coordinates for now, will find out later how to prompt user for them
 
         #print to console
-        print(f"{timestamp}]")
+        print(f"[{capture_time}]")
         print(f"MAC:    {mac}")
         print(f"SSID:   {ssid}")
         print(f"Vendor: {vendor}")
@@ -116,11 +120,13 @@ def handle_packet(pkt):
 #MAIN
 
 #replace this with your interface name(run ip link to see available interfaces)
+
 INTERFACE = "wlan0"
 #Set your current location coordinates here
 #Use google maps to copy coordinates
-LAT = 0.0
-LON = 0.0
+LAT=0.0
+LON=0.0
+
 
 init_db()
 

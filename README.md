@@ -33,7 +33,7 @@ pip install -r requirements.txt
 ## Usage
 ```bash
 # Put adapter in monitor mode
-sudo airmon-ng start wlp6s0
+sudo airmon-ng start wlan0 (replace with your interface name)
 
 # Run the sniffer
 sudo python3 probe_logger.py

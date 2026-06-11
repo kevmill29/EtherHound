@@ -115,12 +115,13 @@ def handle_packet(pkt):
 #MAIN
 
 #replace this with your interface name(run ip link to see available interfaces)
-INTERFACE = "wlan0"
+INTERFACE = " wlp6s0
 
 #Set your current location coordinates here
 #Use google maps to copy coordinates
-LAT = 0.0000 # Replace with latitude
-LON = 0.0000 # Replace with longitude
+LAT = -74.02064671427073
+LON = 41.4894760813576 
+
 
 init_db()
 

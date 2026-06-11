@@ -128,7 +128,7 @@ print("[*] Updating MAC vendor database...")
 MacLookup().update_vendors()
 
 #Start channel hopping in a seperate thread
-hopper_thread = threading.thread(
+hopper_thread = threading.Thread(
     target=channel_hopper,
     args=(INTERFACE,),
     dameon= True #will kill automatically when the main program exits

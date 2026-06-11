@@ -34,8 +34,13 @@ def init_db():
         CREATE TABLE IF NOT EXISTS probe_requests(
         id INTEGER PRIMARY KEY AUTOINCREMENT
         timestamp TEXT,
+        vendor TEXT
         mac_address TEXT,
         ssid TEXT
+        channel INTEGER
+        randomized INTEGER
+        latitude REAL
+        longitude REAL
         )
         ''')
     conn.commit()
@@ -44,8 +49,91 @@ def init_db():
 
 #2nd Step --- Log to Database ---
 
-def log_to_db(timestamp, mac, ssid):
+def log_to_db(timestamp, mac, ssid, vendor, randomized, lat, lon):
     conn = sqlite3.connect("probe_log.db")
     cursor = conn.cursor()
     cursor.execute('''
-        INSERT INTO probe_requests (timestamp, mac_address, ssid)
+        INSERT INTO probe_requests (timestamp, mac_address, ssid, vendor, randomized, latitude, longitude)
+        VALUES(?,?,?,?,?,?,?)
+        ''', (timestamp, mac, ssid, vendor, randomized, lat, lon))
+    conn.commit()
+    conn.close()    
+
+
+#3rd Step --- MAC Address Lookup ---
+def get_vendor(mac_address):
+    try:
+        return MacLookup().lookup(mac_address)
+    except VendorNotFoundError:
+        return "Unknown Vendor"
+    except Exception:
+        return "Lookup Error"
+
+
+#4th Step Randomized MAC Check ---
+def is_randomized(mac_address):
+    first_octet=int(mac.split(':')[0], 16)
+    return bool(first_octet & 0x02)
+
+
+#5th  Step -- Get Current Channel--
+def get_current_channel(interface):
+    try:
+        output = subprocess.check_output(
+            ['iw', 'dev', interface, 'info'],
+            stderr=subprocess.DEVNULL
+        ).decode()
+        for line in output.split('\n'):
+            if 'channel' in line:
+                return(int(line.strip('.').split()[1]))
+            except Exception:
+                return None
+
+
+#6th Step -- Packet Handler--
+def handle_packet(pkt):
+    if pkt.haslayer(Dot11ProbeReq):
+        mac = pkt.addr2
+        ssid=pkt.info.decode(errors='ignore')  if pkt.info else "<wildcard>"
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        vendor = get_vendor(mac)
+        randomized= is_randomized(mac)
+        randomized_str="Yes" if randomized else "No"
+        channel = get_current_channel(INTERFACE)
+        log_to_db(timestamp, mac, ssid, vendor, randomized, channel)
+
+        #print to console
+        print(f"{timestamp}]")
+        print(f"MAC:    {mac}")
+        print(f"SSID:   {ssid}")
+        print(f"Vendor: {vendor}")
+        print(f"Random MAC: {randomized_str}")
+        print(f"Channel: {channel}")
+        print("-" * 40)
+
+
+#MAIN
+
+#replace this with your interface name(run ip link to see available interfaces)
+INTERFACE = "wlan0"
+
+#Set your current location coordinates here
+#Use google maps to copy coordinates
+LAT = 0.0000 # Replace with latitude
+LON = 0.0000 # Replace with longitude
+
+init_db()
+
+print([*] Updating MAC vendor database...")
+MacLookup().update_vendors()
+
+#Start channel hopping in a seperate thread
+hopper_thread = threading.thread(
+    target=channel_hopper,
+    args=(INTERFACE,)
+    dameon= True #will kill automatically when the main program exits
+)
+hopper_thread.start()
+
+print("[*] Starting probe sniffer.. Press CTRL+C to stop.\n")
+sniff(iface=INTERFACE, prn=handle_packet, store=False)

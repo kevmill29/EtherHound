@@ -100,7 +100,7 @@ def handle_packet(pkt):
         randomized= is_randomized(mac)
         randomized_str="Yes" if randomized else "No"
         channel = get_current_channel(INTERFACE)
-        log_to_db(timestamp, mac, ssid, vendor, randomized, channel)
+        log_to_db(timestamp, mac, ssid, vendor, randomized, channel, LAT, LON) #Hardcoded coordinates for now, will find out later how to prompt user for them
 
         #print to console
         print(f"{timestamp}]")

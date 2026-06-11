@@ -131,7 +131,7 @@ MacLookup().update_vendors()
 hopper_thread = threading.Thread(
     target=channel_hopper,
     args=(INTERFACE,),
-    dameon= True #will kill automatically when the main program exits
+    daemon= True #will kill automatically when the main program exits
 )
 hopper_thread.start()
 

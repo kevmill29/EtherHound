@@ -33,7 +33,7 @@ def init_db():
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS probe_requests(
-        id INTEGER PRIMARY KEY AUTOINCREMENT
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         capture_time TEXT,
         vendor TEXT
         mac_address TEXT,
@@ -50,13 +50,13 @@ def init_db():
 
 #2nd Step --- Log to Database ---
 
-def log_to_db(timestamp, mac, ssid, vendor, randomized, lat, lon):
+def log_to_db(capture_time, mac, ssid, vendor, randomized, lat, lon):
     conn = sqlite3.connect("probe_log.db")
     cursor = conn.cursor()
     cursor.execute('''
         INSERT INTO probe_requests (capture_time, mac_address, ssid, vendor, randomized, latitude, longitude)
         VALUES(?,?,?,?,?,?,?)
-        ''', (timestamp, mac, ssid, vendor, randomized, lat, lon))
+        ''', (capture_time, mac, ssid, vendor, randomized, lat, lon))
     conn.commit()
     conn.close()    
 
@@ -117,12 +117,10 @@ def handle_packet(pkt):
 
 #replace this with your interface name(run ip link to see available interfaces)
 INTERFACE = "wlan0"
-
 #Set your current location coordinates here
 #Use google maps to copy coordinates
-LAT = 0.00
-LON = 0.00
-
+LAT = 0.0
+LON = 0.0
 
 init_db()
 

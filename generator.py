@@ -1,13 +1,13 @@
 import folium
 import sqlite3
-from folium.plugins import MarketCluster, HeatMap
+from folium.plugins import MarkerCluster, HeatMap
 
 def generate_map():
     # Connect to db
     conn = sqlite3.connect('probe_log.db')
     cursor = conn.cursor()
     cursor.execute('''
-    SELECT mac_address, vendor, randomized, ssid, latitude, longitude
+    SELECT mac, vendor, randomized, ssid, latitude, longitude
     FROM probe_requests
     WHERE latitude != 0.0 and longitude != 0.0
     ''')
@@ -31,7 +31,10 @@ def generate_map():
         heat_data.append([lat, lon])
 
         #Color code by randomized status
-        color = "red" if randomized == "YES" else "blue"
+        color = "red" if randomized == 1 else "blue"
+
+        #Format randomized status
+        rand_text = "Yes" if randomized == 1 else "No"
 
         folium.CircleMarker(
             location=[lat, lon],
@@ -48,9 +51,9 @@ def generate_map():
         ).add_to(cluster)
 
         #Add heat map layer
-        HeatMap(heat_data).add_to(m)
+     HeatMap(heat_data).add_to(m)
 
-        m.save("probe_map.html")
-        print("[*]Map saved to probe_map.html - open it in your browser!")
+    m.save("probe_map.html")        
+    print("[*]Map saved to probe_map.html - open it in your browser!")
 
 generate_map()

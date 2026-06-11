@@ -49,4 +49,3 @@ def log_to_db(timestamp, mac, ssid):
     cursor = conn.cursor()
     cursor.execute('''
         INSERT INTO probe_requests (timestamp, mac_address, ssid)
--- INSERT --                                                                                19,1          Top
